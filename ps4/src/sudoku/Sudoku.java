@@ -62,7 +62,9 @@ public class Sudoku {
     	try {
     		assert false;
     		
-    	}catch(AssertionError e){
+    	}catch(
+
+    			e){
     		checkRep( this.dim, this.size, this.square, this.occupies);
     	}
     }
