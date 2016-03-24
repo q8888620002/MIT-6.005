@@ -3,7 +3,6 @@ package factors.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -11,7 +10,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
 
 import util.BigMath;
 
@@ -33,12 +31,10 @@ import util.BigMath;
  */
 public class PrimeFactorsClient {
     
-	private  Socket clientSocket;
-	private  BufferedReader in;
-	private  PrintWriter out;
-	private static int serverNum;
-	private BufferedReader typeIn;
-	private static List<String> results;
+	private  final Socket clientSocket;
+	private  final BufferedReader in;
+	private  final PrintWriter out;
+	
 	
 	/**
 	 * Make connection to a Server running on
@@ -62,44 +58,31 @@ public class PrimeFactorsClient {
 	 * 
 	 */
 
-	public void find(int currentServer) throws IOException {
-		typeIn = new BufferedReader(new InputStreamReader(System.in));
-		String userType = typeIn.readLine();
+	private List<String> find(BigInteger inputs,BigInteger low, BigInteger high) throws IOException {
+		List<String> results= new ArrayList<String>() ;
 		
-		while(userType!=null){
-			BigInteger inputs = new BigInteger(userType.trim());
-			BigInteger serverNumber = BigInteger.valueOf(serverNum);
-			BigInteger hiDivideN = BigMath.sqrt(inputs).divide(serverNumber);
-			BigInteger currentNum  = BigInteger.valueOf(currentServer);
-			BigInteger hi = hiDivideN.multiply(currentNum);
-			BigInteger low = hiDivideN.multiply(currentNum.add(new BigInteger("1")));
-				
-			try {
-					if(currentServer == 1){	low = new BigInteger("2");}
-					String outLine = "factor "+ inputs+ " "+low+" "+ hi+"\n";
-					System.err.println(currentServer+outLine);
+		try {
+					String outLine = "factor "+ inputs+ " "+low+" "+ high+"\n";
+			
 					out.print(outLine);
 					out.flush();
-					
 					String reply = in.readLine();
 					while (reply!=null) {
 						if(reply.startsWith("done")){
 							break;
+						}else{
+							String[] primeFactor = reply.split(" ",3);
+							results.add(primeFactor[2]);
+							reply = in.readLine();
 						}
-						String[] primeFactor = reply.split(" ",3);
-						results.add(primeFactor[2]);
-						reply = in.readLine();
 					}
-					System.err.println(results.toString());
+					
 			} catch (Exception e) {
+					System.err.println("error occured while looking for prime factor within"+low+"~"+high);
 					e.printStackTrace();
 				}
-			userType = typeIn.readLine();
-		}
-		in.close();
-		out.close();
-		clientSocket.close();
-	
+		return results;
+			
 	}
 	
 	
@@ -110,36 +93,84 @@ public class PrimeFactorsClient {
      * @param args String array containing Program arguments.  Each String indicates a 
      *      PrimeFactorsServer location in the form "host:port"
      *      If no program arguments are inputted, this Client will terminate.
+     * @throws IOException 
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // TODO complete this implementation.
     	if(args.length == 0){
     		System.err.println("please enter a propiate  host:port");
     		System.exit(1);
     	}
     
-    	serverNum = args.length;
-    	results = new ArrayList<String>();
-    	
-    	
+    	ArrayList<PrimeFactorsClient> clients = new ArrayList<PrimeFactorsClient>();
+    	/*
+    	 * make connection to the server
+    	 */
     	for(int i = 0; i< args.length ;i++){
     		String[] address = args[i].trim().split(":",2);
     		try {
     			int port = Integer.parseInt(address[1]);
 				PrimeFactorsClient client  = new PrimeFactorsClient(address[0], port);
-				client.find(i+1);	
-				client.close();
+				clients.add(client);
     		}catch (Exception e) {
     			System.err.println("Couldn't get I/O for the connection" );
     			System.exit(1);
     		}
     	}
-    	
-    	
+    	Handle(clients);
     }
     
-    /**
-     * Close the socket of the client
+    private static void Handle(ArrayList<PrimeFactorsClient> clients) throws IOException {
+    	BufferedReader typeIn = new BufferedReader(new InputStreamReader(System.in));
+		String userType = typeIn.readLine();
+		
+	
+		try {
+			while(userType!=null){
+				List<String> results = new ArrayList<String>();
+				BigInteger inputs = new BigInteger(userType.trim());
+				BigInteger serverNumber = BigInteger.valueOf(clients.size());
+				BigInteger fraction = BigMath.sqrt(inputs).divide(serverNumber);
+				BigInteger low; 
+				BigInteger high; 
+				
+				
+				for(int i = 1;i< clients.size()+1;i++){
+					if(i== 1){
+						low = new BigInteger("2"); 
+						high = fraction;
+					}else{
+						low = fraction.multiply(BigInteger.valueOf(i-1)).add(new BigInteger("1"));
+						high = fraction.multiply(BigInteger.valueOf(i));
+					}
+					
+					results.addAll(clients.get(i-1).find(inputs,low,high));
+				}
+				
+				StringBuilder stringBuilder = new StringBuilder(">>> ");
+				for(String s:results){
+					if(results.indexOf(s)==results.size()-1){
+						stringBuilder.append(s);
+					}else{
+						stringBuilder.append(s+"*");
+					}
+				}
+				System.out.println(stringBuilder.toString());
+				userType = typeIn.readLine();
+			}
+		} catch (Exception e) {
+			System.out.println(">>>Invaild");
+		//	e.printStackTrace();
+		}finally {
+			for(PrimeFactorsClient c:clients){
+				c.close();
+			}
+		}
+		
+    }
+    
+	/**
+     * Close the socket, inputStream , and outputStream of the client
      * @throws IOException
      */
 	public void close() throws IOException {
