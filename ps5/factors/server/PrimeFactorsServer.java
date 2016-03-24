@@ -94,6 +94,7 @@ public class PrimeFactorsServer {
 	            exception.printStackTrace();
 	    	}finally {
 				cSocket.close();
+				System.err.println("close");
 			}
     	
     }
@@ -110,11 +111,10 @@ public class PrimeFactorsServer {
 			BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 			
 			PrintWriter out = new PrintWriter(new OutputStreamWriter(client.getOutputStream()));
+			
 		try {
-			
 			String input = in.readLine();
-			
-			while(input!= null){
+    		while (input != null) {
 				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]",4);
 				// find prime factor of N or send Invalid to client 
 				try {
@@ -123,27 +123,22 @@ public class PrimeFactorsServer {
 					BigInteger hi = new BigInteger(inputs[3]);
 					
 					List<BigInteger> result = FindPrimeFactor.findPrimeFactor(N, hi, low);
-					
 						for(int i = 0; i < result.size();i++){
-							System.err.println("to client: found "+N+" "+result.get(i)+"\n");
-							out.println("found "+N+" "+result.get(i)+"\n");		
+							out.print("found "+N+" "+result.get(i)+"\n");
+							out.flush();
 						}
-						System.err.println("to client: done "+N+" "+low+" "+hi+"\n");
 					out.print("done "+N+" "+low+" "+hi+"\n");
-					
+					out.flush();
 				} catch (Exception e) {
 					out.print("Invalid\n");
+					out.flush();
 					e.printStackTrace();
-				}
-				out.flush();
-				input= in.readLine();
-			}
-			
-			} catch (Exception e) {
-				e.printStackTrace();
-			}finally{
-				out.close();
+					}
+				input = in.readLine();
+    		}
+			} finally{
 				in.close();
+				out.close();
 			}	
 	}
     

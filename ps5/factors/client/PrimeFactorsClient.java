@@ -3,13 +3,15 @@ package factors.client;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.math.BigInteger;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.sun.jndi.cosnaming.IiopUrl.Address;
-import com.sun.xml.internal.bind.v2.model.core.TypeInfo;
 
 import util.BigMath;
 
@@ -31,11 +33,13 @@ import util.BigMath;
  */
 public class PrimeFactorsClient {
     
-	private  Socket client;
+	private  Socket clientSocket;
 	private  BufferedReader in;
 	private  PrintWriter out;
 	private static int serverNum;
 	private BufferedReader typeIn;
+	private static List<String> results;
+	
 	/**
 	 * Make connection to a Server running on
 	 * @param hostname
@@ -44,9 +48,11 @@ public class PrimeFactorsClient {
 	 * @throws IOException
 	 */
 	public PrimeFactorsClient(String hostname,int port) throws UnknownHostException, IOException{
-		client = new Socket(hostname, port);
-		in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-		out = new PrintWriter(client.getOutputStream());
+		clientSocket = new Socket(hostname, port);
+		in = new BufferedReader(
+				new InputStreamReader(clientSocket.getInputStream()));
+		out = new PrintWriter(
+				new OutputStreamWriter(clientSocket.getOutputStream()));
 	}
 	
 	/**
@@ -56,23 +62,49 @@ public class PrimeFactorsClient {
 	 * 
 	 */
 
-	private void find(int currentServer) throws IOException {
+	public void find(int currentServer) throws IOException {
 		typeIn = new BufferedReader(new InputStreamReader(System.in));
 		String userType = typeIn.readLine();
 		
-		BigInteger inputs = new BigInteger(userType.trim());
-		//BigInteger hi = BigMath.sqrt(inputs).divide(serverNum);
-		System.err.println(inputs);
 		while(userType!=null){
-				try {
-		//			out.print("factor "+inputs+" "+hi);
+			BigInteger inputs = new BigInteger(userType.trim());
+			BigInteger serverNumber = BigInteger.valueOf(serverNum);
+			BigInteger hiDivideN = BigMath.sqrt(inputs).divide(serverNumber);
+			BigInteger currentNum  = BigInteger.valueOf(currentServer);
+			BigInteger hi = hiDivideN.multiply(currentNum);
+			BigInteger low = hiDivideN.multiply(currentNum.add(new BigInteger("1")));
+				
+			try {
+					if(currentServer == 1){	low = new BigInteger("2");}
+					String outLine = "factor "+ inputs+ " "+low+" "+ hi+"\n";
+					System.err.println(currentServer+outLine);
+					out.print(outLine);
+					out.flush();
 					
-				} catch (Exception e) {
-					// TODO: handle exception
+					String reply = in.readLine();
+					while (reply!=null) {
+						if(reply.startsWith("done")){
+							break;
+						}
+						String[] primeFactor = reply.split(" ",3);
+						results.add(primeFactor[2]);
+						reply = in.readLine();
+					}
+					System.err.println(results.toString());
+			} catch (Exception e) {
+					e.printStackTrace();
 				}
+			userType = typeIn.readLine();
 		}
-		
+		in.close();
+		out.close();
+		clientSocket.close();
+	
 	}
+	
+	
+
+	
 	
     /**
      * @param args String array containing Program arguments.  Each String indicates a 
@@ -87,22 +119,34 @@ public class PrimeFactorsClient {
     	}
     
     	serverNum = args.length;
-    	try {
-    	for(int i = 0; i< args.length ;i++){
-    		int index = i;
-    		String[] address = args[index].trim().split(":",2);
+    	results = new ArrayList<String>();
     	
-    		int port = Integer.parseInt(address[1]);
-    		
+    	
+    	for(int i = 0; i< args.length ;i++){
+    		String[] address = args[i].trim().split(":",2);
+    		try {
+    			int port = Integer.parseInt(address[1]);
 				PrimeFactorsClient client  = new PrimeFactorsClient(address[0], port);
-				//client.find(i);	
-    		} 
-    	}catch (Exception e) {
-			System.err.println("Couldn't get I/O for the connection" );
-			System.exit(1);
-		}
+				client.find(i+1);	
+				client.close();
+    		}catch (Exception e) {
+    			System.err.println("Couldn't get I/O for the connection" );
+    			System.exit(1);
+    		}
+    	}
+    	
     	
     }
+    
+    /**
+     * Close the socket of the client
+     * @throws IOException
+     */
+	public void close() throws IOException {
+		in.close();
+		out.close();
+		clientSocket.close();
+	}
 
 
 
