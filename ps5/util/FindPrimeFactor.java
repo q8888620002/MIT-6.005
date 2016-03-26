@@ -40,7 +40,7 @@ public class FindPrimeFactor {
     	BigInteger zero = new BigInteger("0");
     	List<BigInteger> results = new ArrayList<BigInteger>();
     	
-    			while(n.compareTo(one) == 1){
+    			while(n.compareTo(one) == 1& (x.compareTo(hi) != 1)){
     				if(x.isProbablePrime(PRIME_CERTAINTY)){
     					while(n.remainder(x).equals(zero)){
     						results.add(x);
@@ -48,9 +48,6 @@ public class FindPrimeFactor {
     					}
         			}	
         			x = x.add(one);
-        			if(x.compareTo(hi) == 1){
-        				break;
-        			}
     			}
     			 return results;	
     		

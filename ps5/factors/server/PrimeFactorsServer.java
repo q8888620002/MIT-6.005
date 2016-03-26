@@ -136,6 +136,7 @@ public class PrimeFactorsServer {
 					out.flush();
 					e.printStackTrace();
 					}
+				
 				input = in.readLine();
     		   }
 			} finally{

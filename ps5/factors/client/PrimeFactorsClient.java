@@ -189,7 +189,6 @@ public class PrimeFactorsClient {
 				userType = typeIn.readLine().trim();
 			}
 			
-			
 		} catch (NumberFormatException exception) {
 			System.out.println(">>> Invaild");
 		}finally {
