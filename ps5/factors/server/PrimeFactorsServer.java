@@ -9,6 +9,8 @@ import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import util.FindPrimeFactor;
 
@@ -116,27 +118,30 @@ public class PrimeFactorsServer {
 		try {
 			String input = in.readLine();
     		while (input != null) {
-    			
-				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]",4);
-				// find prime factor of N or send Invalid to client 
-				try {
-					BigInteger N = new BigInteger(inputs[1]);
-					BigInteger low = new BigInteger(inputs[2]);
-					BigInteger hi = new BigInteger(inputs[3]);
-					
-					List<BigInteger> result = FindPrimeFactor.findPrimeFactor(N, hi, low);
-						for(int i = 0; i < result.size();i++){
-							out.print("found "+N+" "+result.get(i)+"\n");
-							out.flush();
-						}
-					out.print("done "+N+" "+low+" "+hi+"\n");
+    			if(validateRequest(input)){
+    				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]",4);
+    				// find prime factor of N or send Invalid to client 
+    				try {
+    					BigInteger N = new BigInteger(inputs[1]);
+    					BigInteger low = new BigInteger(inputs[2]);
+    					BigInteger hi = new BigInteger(inputs[3]);
+    					
+    					List<BigInteger> result = FindPrimeFactor.findPrimeFactor(N, hi, low);
+    						for(int i = 0; i < result.size();i++){
+    							out.print("found "+N+" "+result.get(i)+"\n");
+    							out.flush();
+    						}
+    					out.print("done "+N+" "+low+" "+hi+"\n");
+    					out.flush();
+    				} catch (Exception e) {
+    					out.print("Invalid\n");
+    					out.flush();
+    					e.printStackTrace();
+    					}
+    			}else{
+    				out.print("Invalid\n");
 					out.flush();
-				} catch (Exception e) {
-					out.print("Invalid\n");
-					out.flush();
-					e.printStackTrace();
-					}
-				
+    			}
 				input = in.readLine();
     		   }
 			} finally{
@@ -144,6 +149,31 @@ public class PrimeFactorsServer {
 				out.close();
 			}	
 	}
+    
+    
+    
+    /**
+     * Check if the input from client matches the pattern "factor N low high"
+     * @param the string input of client
+     * @return true if it matches that requirement
+     */
+  
+    private boolean validateRequest(String request) {
+    	Pattern protocol = Pattern.compile("factor\\s\\d+\\s\\d+\\s\\d+");
+    	Matcher protocolMatcher = protocol.matcher(request);
+    	if (protocolMatcher.find()) {
+    		String[] args = request.split("\\s");
+    		BigInteger N = new BigInteger(args[1]);
+    		if (! (N.compareTo(BigInteger.valueOf(2)) == -1)) {	// N >= 2
+    			return true;
+    		} else {
+    			return false;
+    		}
+    	} else {
+    		return false;
+    	}
+    }
+    
     
 
 	/**
