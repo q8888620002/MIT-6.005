@@ -170,6 +170,7 @@ public class PrimeFactorsClient {
 							}else{
 								low = fraction.multiply(BigInteger.valueOf(i-1)).add(new BigInteger("1"));
 								high = fraction.multiply(BigInteger.valueOf(i));
+							
 							}
 							
 							results.addAll(clients.get(i-1).find(inputs,low,high));

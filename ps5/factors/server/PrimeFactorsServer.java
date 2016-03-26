@@ -116,7 +116,8 @@ public class PrimeFactorsServer {
 		try {
 			String input = in.readLine();
     		while (input != null) {
-				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]");
+    			
+				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]",4);
 				// find prime factor of N or send Invalid to client 
 				try {
 					BigInteger N = new BigInteger(inputs[1]);

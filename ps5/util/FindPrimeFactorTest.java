@@ -110,7 +110,7 @@ public class FindPrimeFactorTest {
 	}
 	
 	
-
+	@Test
 	// Find Prime factor of 264 with low 2, high 17
 	public void FindPrimeFactor264() throws Exception{
 		BigInteger N = new BigInteger("264");

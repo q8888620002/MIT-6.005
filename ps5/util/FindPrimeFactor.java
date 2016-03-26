@@ -40,20 +40,20 @@ public class FindPrimeFactor {
     	BigInteger zero = new BigInteger("0");
     	List<BigInteger> results = new ArrayList<BigInteger>();
     	
-    		if(x.isProbablePrime(PRIME_CERTAINTY)){
     			while(n.compareTo(one) == 1){
-    				while(n.remainder(x).equals(zero)){
-        				results.add(x);
-        				n = n.divide(x);
-        			}if(x.compareTo(hi) == 0){
-        				return results;
+    				if(x.isProbablePrime(PRIME_CERTAINTY)){
+    					while(n.remainder(x).equals(zero)){
+    						results.add(x);
+            				n = n.divide(x);
+    					}
+        			}	
+        			x = x.add(one);
+        			if(x.compareTo(hi) == 1){
+        				break;
         			}
-    				x = x.add(one);
     			}
     			 return results;	
-    		}
-
-    	return results;
+    		
     }
     
 }
