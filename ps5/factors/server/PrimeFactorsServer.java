@@ -49,8 +49,7 @@ import util.FindPrimeFactor;
  */
 public class PrimeFactorsServer {
         
-    /** Certainty variable for BigInteger isProbablePrime() function. */
-    private final static int PRIME_CERTAINTY = 10;
+    
     
     public static final int defaultPortNum = 4444;
     
@@ -69,6 +68,8 @@ public class PrimeFactorsServer {
 		} catch (Exception e) {
 			System.err.println("cannot connect to port"+ port);
 			System.err.println(e);
+
+		
 		}
     }
     
@@ -94,7 +95,7 @@ public class PrimeFactorsServer {
 	            exception.printStackTrace();
 	    	}finally {
 				cSocket.close();
-				System.err.println("close");
+				System.err.println("socket closed");
 			}
     	
     }
@@ -115,7 +116,7 @@ public class PrimeFactorsServer {
 		try {
 			String input = in.readLine();
     		while (input != null) {
-				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]",4);
+				String[] inputs = input.replaceAll("[A-Za-z]", "").split("[\\s+]");
 				// find prime factor of N or send Invalid to client 
 				try {
 					BigInteger N = new BigInteger(inputs[1]);
