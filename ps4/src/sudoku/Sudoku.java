@@ -58,15 +58,14 @@ public class Sudoku {
     
     // TODO: write your rep invariant here
      void checkRep() {
-        // TODO: implement this.
-    	try {
-    		assert false;
-    		
-    	}catch(
-
-    			e){
-    		checkRep( this.dim, this.size, this.square, this.occupies);
-    	}
+       
+    	 try {
+    		 assert false;
+    		 checkRep( this.dim, this.size, this.square, this.occupies);
+    		 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
     }
     
     // check the rep invariant of Sudoku
