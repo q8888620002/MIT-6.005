@@ -1,5 +1,84 @@
 package minesweeper;
 
-public class BoardTest {
+import static org.junit.Assert.*;
 
+import org.junit.Test;
+
+public class BoardTest {
+	
+	// make sure assertions are turned on!  
+    @Test(expected=AssertionError.class)
+    public void testAssertionsEnabled() {
+        assert false;
+    }
+    
+    @Test
+    /*
+     * Construct a Board with untouched square state 
+     */
+    public void BoardTest1(){
+    	Bomb b01 = new Bomb(0, 1, SquareState.UNTOUCHED);
+    	Bomb b11 = new Bomb(1, 1, SquareState.UNTOUCHED);
+    	NotBomb nb10 = new NotBomb(1, 0, 2, SquareState.UNTOUCHED);
+    	NotBomb nb00 = new NotBomb(1, 0, 2, SquareState.UNTOUCHED);
+    	
+    	Square[][] squares = new Square[2][2];
+    	squares[0][0] = nb00;
+    	squares[1][0] = nb10;
+    	squares[1][1] = b11;
+    	squares[0][1] = b01;
+    	
+    	Board board = new Board(2, squares);
+    	assertEquals(board.toString(),"--\n"
+    			+ "--\n");
+    	
+    }
+    
+    
+    @Test
+    /*
+     * Construct a Board with a bomb dug
+     */
+    public void BoardTest2(){
+    	Bomb b01 = new Bomb(0, 1, SquareState.DUG);
+    	Bomb b11 = new Bomb(1, 1, SquareState.UNTOUCHED);
+    	NotBomb nb10 = new NotBomb(1, 0, 2, SquareState.UNTOUCHED);
+    	NotBomb nb00 = new NotBomb(1, 0, 2, SquareState.UNTOUCHED);
+    	
+    	Square[][] squares = new Square[2][2];
+    	squares[0][0] = nb00;
+    	squares[1][0] = nb10;
+    	squares[1][1] = b11;
+    	squares[0][1] = b01;
+    	
+    	Board board = new Board(2, squares);
+    	assertEquals(board.toString(),"- \n"
+    			+ "--\n");
+    	
+    }
+    
+    
+    
+    @Test
+    /*
+     * Construct a Board with a non-bomb dug and a bomb dug
+     */
+    public void BoardTest3(){
+    	Bomb b01 = new Bomb(0, 1, SquareState.DUG);
+    	Bomb b11 = new Bomb(1, 1, SquareState.UNTOUCHED);
+    	NotBomb nb10 = new NotBomb(1, 0, 2, SquareState.DUG);
+    	NotBomb nb00 = new NotBomb(1, 0, 2, SquareState.UNTOUCHED);
+    	
+    	Square[][] squares = new Square[2][2];
+    	squares[0][0] = nb00;
+    	squares[1][0] = nb10;
+    	squares[1][1] = b11;
+    	squares[0][1] = b01;
+    	
+    	Board board = new Board(2, squares);
+    	System.err.println(board.toString());
+    	assertEquals(board.toString(),"- \n"
+    			+ "2-\n");
+    	
+    }
 }
