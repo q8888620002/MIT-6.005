@@ -34,6 +34,22 @@ public class NotBomb implements Square{
 	}
 	
 	/**
+	 * Constructor method for non-bomb Square without provided near by bomb number
+	 * @param row of the Non bomb 
+	 * @param col of the non bomb
+	 * @param boolean value of the touch state 
+	 */
+	public NotBomb(int row,int col,SquareState state){
+		this.row = row;
+		this.col = col;
+		this.nearByBomb = 0;
+		this.state = state;
+		this.isAbomb = false;
+		checkRep(nearByBomb);
+	}
+	
+	
+	/**
 	 * Check rep of the non-bomb Square
 	 * @param BombNumber
 	 */
