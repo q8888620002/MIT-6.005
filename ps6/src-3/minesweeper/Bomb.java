@@ -14,7 +14,6 @@ public class Bomb implements Square{
 	private final int row;
 	private final int col;
 	private final SquareState state;
-	private final int nearByBomb = 0;
 	private final Boolean IsABomb;
 	
 	/**
@@ -65,13 +64,19 @@ public class Bomb implements Square{
 		}
 		
 		/**
-		 * Observer of near by bomb
-		 * @return integer of near by bomb
+		 * Validation of a bomb
+		 * @return Boolean value  
 		 */
-		public int getNearByBomb() {
-			return nearByBomb;
+		@Override
+		public Boolean isABomb() {
+			return IsABomb;
 		}
 		
+		@Override
+		public int getNearByBomb() {
+			return 0;
+		}
+
 		
 		/**
 		 * Observer method of the bomb 
@@ -83,7 +88,8 @@ public class Bomb implements Square{
 			stringBuilder.append("I am a bomb at["+row+","+col+"]");
 			return stringBuilder.toString();
 		}
-		
+
+	
 
 	
 

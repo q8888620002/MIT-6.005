@@ -14,6 +14,7 @@ public class NotBomb implements Square{
 	private final int col;
 	private final int nearByBomb;
 	private final SquareState state;
+	private final Boolean isAbomb;
 
 	
 	/**
@@ -28,7 +29,7 @@ public class NotBomb implements Square{
 		this.col = col;
 		this.nearByBomb = BombNumber;
 		this.state = state;
-	
+		this.isAbomb = false;
 		checkRep(nearByBomb);
 	}
 	
@@ -76,6 +77,16 @@ public class NotBomb implements Square{
 	}
 	
 	/**
+	 * Validation of a bomb
+	 * @return Boolean value  
+	 */
+	@Override
+	public Boolean isABomb() {
+		
+		return isAbomb;
+	}
+	
+	/**
 	 * Observer method of the non-bomb square 
 	 *@return the string representation of the non-bomb Square.
 	 */
@@ -86,6 +97,7 @@ public class NotBomb implements Square{
 		return stringBuilder.toString();
 		
 	}
+
 
 
 }

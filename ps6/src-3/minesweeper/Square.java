@@ -23,4 +23,8 @@ public interface Square {
 	public Square flagged();
 	
 	public int getNearByBomb();
+	/*
+	 * check if a square is a bomb
+	 */
+	public Boolean isABomb();
 }
