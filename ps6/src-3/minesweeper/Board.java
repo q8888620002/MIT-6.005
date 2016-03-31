@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.nio.Buffer;
 import java.util.Random;
 
 /*
@@ -21,8 +19,10 @@ import java.util.Random;
  * 		
  * Thread Safety:
  * 		
- * 		- There is no mutator method in Board object; besides, 
- * 		  The accessor methods and producer methods need to be synchronized. 
+ * 		- There is no mutator method in Board object; 
+ * 	      besides, The accessor methods and producer methods need to be synchronized.
+ *        getNeibor and getSquare don't need to be synchronized because they are
+ *        only called when constructing a board.   
  * 		- All variable are final and immutable.
  * 		- Every ConnectionHandler is assigned to a client. Since all the 
  *      ConnectionHandlers work on a single instance of the Board, as
@@ -153,7 +153,7 @@ public class Board {
 		 * @param current col of square ,0 <= col <= dim-1
 		 * @return the number of bomb
 		 */
-		private  int getNeighbor(int row, int col,Square[][] squares) {
+		private int getNeighbor(int row, int col,Square[][] squares) {
 			assert (0 <=row )&& (row < dim):"row should be within 0 to "+ dim;
 			assert (0 <=col )&& (col < dim):"row should be within 0 to "+ dim;
 			
@@ -190,6 +190,8 @@ public class Board {
 				for(int j=0;j < dim; j++){
 					if((i == row) && (j == col) && (!squares[row][col].isABomb() )){
 						newSquare[row][col] = squares[row][col].dug();
+					}else if((i == row) && (j == col) && (squares[row][col].isABomb() )){
+						newSquare[i][j] = new NotBomb(row, col, SquareState.DUG);
 					}else{
 						newSquare[i][j] = squares[i][j];
 					}
@@ -217,8 +219,76 @@ public class Board {
 					}
 				}
 			}
-			
 			return new Board(dim, newSquare);
+		}
+		
+		
+		/**
+		 * Changing state of a square after a client deflagged it. 
+		 * @param row of the square, 0 <= row <= dim-1
+		 * @param current col of square ,0 <= col <= dim-1
+		 * @return a new board with square[row][col] flagged
+		 */
+		public synchronized Board deflag(int row, int col){
+			Square[][] newSquare = new Square[dim][dim];
+			
+			for(int i=0;i < dim; i++){
+				for(int j=0;j < dim; j++){
+					if(i == row && j == col && squares[row][col].getState() == SquareState.FLAGGED){
+						newSquare[row][col] = squares[row][col].deflagged();
+					}else{
+						newSquare[i][j] = squares[i][j];
+					}
+				}
+			}
+			return new Board(dim, newSquare);
+		}
+		
+		
+		/**
+		 * Get the state of given coordination 
+		 * @param row of the square , 0 =< x < dim
+		 * @param col of the square , 0 =< y , dim
+		 * @return state of the square or print an error message if x or y out of range
+		 */
+		public synchronized SquareState getState(int x, int y){
+				if(( x>=0 && x< dim)&&( y >=0 && y< dim)){
+					return squares[x][y].getState();
+				}else{
+					System.err.println("Invalid coordination of("+x+","+y+")");
+					return null;
+				}
+			
+		}
+		
+		/**
+		 * Return if is a bomb of a square
+		 * @param row of the square , 0 =< x < dim
+		 * @param col of the square , 0 =< y , dim
+		 * @return Boolean value of weather a square if it's a bomb
+		 */
+		
+		public synchronized Boolean isABomb(int x, int y) {
+			return squares[x][y].isABomb();
+		}
+		
+		/**
+		 * Return numbers of nearby bomb of a square
+		 * @param row of the square , 0 =< x < dim
+		 * @param col of the square , 0 =< y , dim
+		 * @return numbers of bomb near by
+		 */
+		
+		public synchronized Integer bombNumber(int x, int y) {
+			return squares[x][y].getNearByBomb();
+		}
+		
+		/**
+		 * Return the size of the board
+		 * @return the size of the board
+		 */
+		public synchronized Integer getDim(){
+			return dim;
 		}
 		
 		/**
@@ -235,17 +305,17 @@ public class Board {
 					case DUG:
 						if (!squares[i][j].isABomb()) {
 							if(squares[i][j].getNearByBomb()==0){
-								stringBuilder.append(" ");
+								stringBuilder.append("  ");
 							}else{
-								stringBuilder.append(squares[i][j].getNearByBomb());
+								stringBuilder.append(squares[i][j].getNearByBomb()+" ");
 							}
 						}
 						break;
 					case FLAGGED:
-						stringBuilder.append("F");
+						stringBuilder.append("F ");
 						break;
 					case UNTOUCHED:
-						stringBuilder.append("-");
+						stringBuilder.append("- ");
 						break;
 					default:
 						break;

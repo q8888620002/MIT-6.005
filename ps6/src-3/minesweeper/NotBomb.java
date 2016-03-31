@@ -72,8 +72,16 @@ public class NotBomb implements Square{
 	 * Producer method of a non-bomb square 
 	 * @return a new non-bomb Square after being flagged
 	 */
-	public Square flagged() {
+	public NotBomb flagged() {
 		return new NotBomb(row,col,nearByBomb, SquareState.FLAGGED);
+	}
+	
+	/**
+	 * Producer method of a bomb square
+	 * @return a new Bomb square after being deflagged
+	 */
+	public NotBomb deflagged() {
+		return new NotBomb(row,col, nearByBomb ,SquareState.UNTOUCHED);
 	}
 	
 	/**

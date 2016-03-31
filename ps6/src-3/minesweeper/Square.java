@@ -22,6 +22,11 @@ public interface Square {
 	 */
 	public Square flagged();
 	
+	/*
+	 * deflagged a square
+	 */
+	public Square deflagged();
+	
 	public int getNearByBomb();
 	/*
 	 * check if a square is a bomb

@@ -56,6 +56,14 @@ public class Bomb implements Square{
 		}
 		
 		/**
+		 * Producer method of a bomb square
+		 * @return a new Bomb square after being deflagged
+		 */
+		public Bomb deflagged() {
+			return new Bomb(row,col, SquareState.UNTOUCHED);
+		}
+		
+		/**
 		 * Observer of the state of square
 		 * @return the state of the square
 		 */
