@@ -4,8 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.Random;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+import java.util.ArrayList;
 /*
  * A board represents the top layer of minesweeper. 
  * It is composed of N*N squares(bomb or non-bomb).
@@ -24,9 +28,6 @@ import java.util.Random;
  *        getNeibor and getSquare don't need to be synchronized because they are
  *        only called when constructing a board.   
  * 		- All variable are final and immutable.
- * 		- Every ConnectionHandler is assigned to a client. Since all the 
- *      ConnectionHandlers work on a single instance of the Board, as
- *      long as the Board is threadsafe, the whole server is threadsafe. 
  * 		
  * 
  */
@@ -67,7 +68,7 @@ public class Board {
 				}
 			}
 			
-			this.squares = squares;
+			this.squares = getNewSquare(squares);
 		}
 		
 		
@@ -109,7 +110,7 @@ public class Board {
 		}
 		
 		/**
-		 * Check the rep of Board
+		 * Check the rep invariant of Board
 		 * 
 		 */
 		private synchronized void checkRep() {
@@ -129,40 +130,42 @@ public class Board {
 		}
 		
 		/**
-		 * Calculate nearby Bomb number
-		 * @return a new Board with correct nearby bomb numbers within squares
+		 * Calculate nearby Bomb number and return a new square array with correct nearby bomb number.
+		 * @param initial state of an array of a board squares without correct bomb number information.
+		 * @return a new array of squares with correct nearby bomb numbers information.
 		 */
 		private Square[][] getNewSquare(Square[][] squares){
 			Square[][] newSquare = new Square[dim][dim];
-		for(int i = 0; i< dim;i++ ){
-			for(int j = 0; j< dim;j++ ){
-				int nearByBomb = getNeighbor(i,j, squares);
-					if(squares[i][j].isABomb()){
-						newSquare[i][j] = squares[i][j];
-					}else{
-						newSquare[i][j] = new NotBomb(i, j, nearByBomb, squares[i][j].getState());
+			for(int i = 0; i< dim;i++ ){
+				for(int j = 0; j< dim;j++ ){
+					int nearByBomb = countBomb(i,j, squares);
+						if(squares[i][j].isABomb()){
+							newSquare[i][j] = new Bomb(i, j,nearByBomb, squares[i][j].getState());
+						}else{
+							newSquare[i][j] = new NotBomb(i, j, nearByBomb, squares[i][j].getState());
+						}
 					}
 				}
-			}
 			return newSquare;
 		}
 		
 		/**
-		 * get the number of bomb near by 
+		 * Count the number of bomb near by of a given coordination (row, col)
+		 *  
 		 * @param current row of square, 0 <= row <= dim-1
 		 * @param current col of square ,0 <= col <= dim-1
 		 * @return the number of bomb
 		 */
-		private int getNeighbor(int row, int col,Square[][] squares) {
+		private int countBomb(int row, int col,Square[][] squares) {
 			assert (0 <=row )&& (row < dim):"row should be within 0 to "+ dim;
 			assert (0 <=col )&& (col < dim):"row should be within 0 to "+ dim;
 			
 			int Bomb = 0;
+			
 			for(int i= row-1 ; i <= row+1; i++){
 				if(!((i < 0)||(i > dim - 1 ))){
 					for(int j = col-1 ; j <= col+1;j++){
 						if(!((j < 0)||(j > dim-1)||(j == col && i == row))){
-							
 							if(squares[i][j].isABomb()){
 								Bomb++;
 							}
@@ -175,7 +178,11 @@ public class Board {
 		}
 		
 		/**
-		 * Changing state of a square after a client dug it. 
+		 * Digs at the location x,y. x,y should have not been dug already.
+		 * Changing state of an UNTOUCHED square after a client dug it. 
+		 * 	i.e. If a square is a BOMB then it is transformed to a NOT BOMB with DUG state
+		 * 	     If there is no Bomb within neighboring squares, 
+		 * 		  then it will dig recursively with neighbor squares
 		 * @param row of the square ,0 <= row <= dim-1
 		 * @param current col of square ,0 <= col <= dim-1
 		 * @return a new board with square[row][col] dug
@@ -184,21 +191,75 @@ public class Board {
 			assert (0 <=row )&& (row < dim):"row should be within 0 to "+ dim;
 			assert (0 <=col )&& (col < dim):"row should be within 0 to "+ dim;
 			
-			Square[][] newSquare = new Square[dim][dim];
+			Square[][] newSquare = squares;
 			
-			for(int i=0;i < dim; i++){
-				for(int j=0;j < dim; j++){
-					if((i == row) && (j == col) && (!squares[row][col].isABomb() )){
-						newSquare[row][col] = squares[row][col].dug();
+			for(int i= 0;i < dim; i++){
+				
+				for(int j= 0;j < dim; j++){
+					
+					if((i == row) && (j == col) && (!squares[row][col].isABomb())){
+						
+						if(squares[row][col].getNearByBomb() == 0){
+							
+							// dig neighbors 
+							
+							ArrayList<String> list = getNeighborCor(row, col,new ArrayList<String>());
+							
+							for(String s:list){
+								int x = Integer.parseInt(s.split(",")[0]);
+								int y = Integer.parseInt(s.split(",")[1]);
+								
+								newSquare[x][y] = squares[x][y].dug();
+							}
+							
+						}else{
+							newSquare[row][col] = squares[row][col].dug();
+						}
+						
 					}else if((i == row) && (j == col) && (squares[row][col].isABomb() )){
+						// dug a bomb
 						newSquare[i][j] = new NotBomb(row, col, SquareState.DUG);
-					}else{
-						newSquare[i][j] = squares[i][j];
 					}
 				}
 			}
 			
 			return new Board(dim, newSquare);
+		}
+		
+		
+		/**
+		 * Get adjacent coordination of a square 
+		 * @param row , 0 <= row <= dim-1
+		 * @param col ,0 <= col <= dim-1
+		 * @return an arrayList of string containing adjacent coordination 
+		 * 
+		 */
+		private synchronized ArrayList<String> getNeighborCor(int row, int col,ArrayList<String> list) {
+			ArrayList<String> newlist = list;
+			
+			for(int k = row - 1 ; k <= row + 1; k++){
+				if(!((k < 0)||(k >= dim ))){
+					for(int l = col - 1 ; l <= col + 1; l++){
+						if(!((l < 0)||(l >= dim))){
+							
+							// check if the list already contains the coordinations 
+							
+							if(!newlist.contains(k+","+l)){
+								newlist.add(k+","+l);
+								
+								// if there is another square with no bomb near by 
+								//  add their neighbor coordinations	
+								if(squares[k][l].getNearByBomb()==0){
+									newlist = getNeighborCor(k, l, newlist);
+								}
+							}
+							
+						}
+					}
+				}
+			}
+			return newlist;
+			
 		}
 		
 		/**

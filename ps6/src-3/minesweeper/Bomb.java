@@ -14,10 +14,28 @@ public class Bomb implements Square{
 	private final int row;
 	private final int col;
 	private final SquareState state;
+	private final int nearByBomb;
 	private final Boolean IsABomb;
 	
 	/**
 	 * Constructor method for non-bomb Square
+	 * @param row of the Bomb
+	 * @param nearByBomb 
+	 * @param column of the Bomb
+	 * @param boolean value of the touch state 
+	 * @param whether this square is a bomb
+	 */
+	public Bomb(int row,int col, int nearByBomb, SquareState state){
+		this.row = row;
+		this.col= col;
+		this.state = state;
+		this.nearByBomb = nearByBomb;
+		this.IsABomb = true;
+		checkRep();
+		}
+	
+	/**
+	 * Constructor method for bomb Square without nearby bomb
 	 * @param row of the Bomb
 	 * @param column of the Bomb
 	 * @param boolean value of the touch state 
@@ -27,6 +45,7 @@ public class Bomb implements Square{
 		this.row = row;
 		this.col= col;
 		this.state = state;
+		this.nearByBomb = 0;
 		this.IsABomb = true;
 		checkRep();
 		}
@@ -44,7 +63,7 @@ public class Bomb implements Square{
 		 * @return a new Bomb square after being dug
 		 */
 		public Bomb dug() {
-				return new Bomb(row,col, SquareState.DUG);
+				return new Bomb(row,col,nearByBomb, SquareState.DUG);
 		}
 		
 		/**
@@ -52,7 +71,7 @@ public class Bomb implements Square{
 		 * @return a new Bomb square after being flagged
 		 */
 		public Bomb flagged() {
-			return new Bomb(row,col, SquareState.FLAGGED);
+			return new Bomb(row,col,nearByBomb, SquareState.FLAGGED);
 		}
 		
 		/**
@@ -60,7 +79,7 @@ public class Bomb implements Square{
 		 * @return a new Bomb square after being deflagged
 		 */
 		public Bomb deflagged() {
-			return new Bomb(row,col, SquareState.UNTOUCHED);
+			return new Bomb(row,col, nearByBomb,SquareState.UNTOUCHED);
 		}
 		
 		/**
@@ -82,7 +101,7 @@ public class Bomb implements Square{
 		
 		@Override
 		public int getNearByBomb() {
-			return 0;
+			return nearByBomb;
 		}
 
 		

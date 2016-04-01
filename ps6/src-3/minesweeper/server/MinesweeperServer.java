@@ -6,7 +6,13 @@ import minesweeper.Board;
 import minesweeper.SquareState;
 
 import java.io.*;
-
+/*
+ * - MinesweeperServer is thread safe because all method that accessor or producer of the board data-type
+ * 		or numbers of player are all synchronized.  
+ * - Every ConnectionHandler is assigned to a client. Since all the 
+ *       ConnectionHandlers work on a single instance of the Board, as
+ *    	long as the Board is thread-safe, the whole server is thread-safe. 
+ */
 public class MinesweeperServer {
 
 	private static int PORT = 4444;
@@ -147,7 +153,7 @@ public class MinesweeperServer {
 			out.close();
 			in.close();
 			clientSocket.close();
-			
+			decrementPlayer();
 		} else {
 			int x = Integer.parseInt(tokens[1]);
 			int y = Integer.parseInt(tokens[2]);
@@ -172,24 +178,8 @@ public class MinesweeperServer {
 						}else{
 							// if a square is not a bomb
 							
-							if(board.bombNumber(x, y) == 0){
-								
-								// dig nearby squares if no bomb near by 
-								
-								for(int i= x-1 ; i <= x+1; i++){
-									if(!((i < 0)||(i > board.getDim() - 1 ))){
-										for(int j = y-1 ; j <= y +1;j++){
-											if(!((j < 0)||(j > board.getDim()-1))){
-													board = board.Dug(i, j);
-											}
-										}
-									}
-								}
-							}else{
-								// with bomb near by
-								
-								board = board.Dug(x, y);
-							}
+							board = board.Dug(x, y);
+							
 							return board.toString();
 						}
 					}else{
