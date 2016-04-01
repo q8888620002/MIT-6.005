@@ -106,7 +106,7 @@ public class Board {
 					row++;
 				}
 				
-				this.squares = squares;
+				this.squares = getNewSquare(squares);
 		}
 		
 		/**
