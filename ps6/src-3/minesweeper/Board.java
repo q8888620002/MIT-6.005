@@ -130,7 +130,8 @@ public class Board {
 		}
 		
 		/**
-		 * Calculate nearby Bomb number and return a new square array with correct nearby bomb number.
+		 * Calculate nearby Bomb number 
+		 *  return a new square array with correct nearby bomb number.
 		 * @param initial state of an array of a board squares without correct bomb number information.
 		 * @return a new array of squares with correct nearby bomb numbers information.
 		 */
