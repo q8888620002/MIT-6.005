@@ -15,7 +15,7 @@ import java.io.*;
  */
 public class MinesweeperServer {
 
-	private static int PORT = 4444;
+	private static int PORT = 0;
 	private ServerSocket serverSocket;
 	private final boolean DEBUG;
 	private Board board;

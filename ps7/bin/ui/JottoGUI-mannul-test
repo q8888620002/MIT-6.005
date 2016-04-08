@@ -1,0 +1,16 @@
+Manual testing for Jotto GUI
+============================
+
+1. Test that words, empty string, zero, and negative integers result in random puzzle number generation, clearing the text field and the table
+2. Test that clicking New Puzzle button or entering the text-field with nothing in text-field results in random puzzle generation
+3. Test that valid, positive integer game puzzle numbers are accepted and starts new game
+
+4. Test that correct guess results in a "You Win!" message
+5. Test that guess with != 5 letters in word returns Invalid Guess.
+6. Test that guess with multiple words returns Invalid Guess.
+7. Test that normal guess results in populating the table properly.
+
+8. Test that long-server request with * populates guesses into the table while waiting to hear a server response
+****
+9. Test that clicking New Puzzle in the middle of a server response doesn't write the late server response to the New Game
+**** 
